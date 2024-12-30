@@ -1,42 +1,80 @@
-import React from "react";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, View, FlatList, Button } from "react-native";
+import { StatusBar } from "expo-status-bar";
+
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 export default function App() {
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+  const [courseGoals, setCourseGoals] = useState([]);
+
+  function startAddGoalHandler() {
+    setModalIsVisible(true);
+  }
+
+  function endAddGoalHandler() {
+    setModalIsVisible(false);
+  }
+
+  function addGoalHandler(enteredGoalText) {
+    setCourseGoals((currentCourseGoals) => [
+      ...currentCourseGoals,
+      { text: enteredGoalText, id: Math.random().toString() },
+    ]);
+    endAddGoalHandler();
+  }
+
+  function deleteGoalHandler(id) {
+    setCourseGoals((currentCourseGoals) => {
+      return currentCourseGoals.filter((goal) => goal.id !== id);
+    });
+  }
+
   return (
-    <View style={{ padding: 50 }}>
-      <View
-        style={{
-          backgroundColor: "red",
-          width: 100,
-          height: 100,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text>1</Text>
+    <>
+      <StatusBar style="light" />
+      <View style={styles.appContainer}>
+        <Button
+          title="Add New Goal"
+          color="#a065ec"
+          onPress={startAddGoalHandler}
+        />
+        <GoalInput
+          visible={modalIsVisible}
+          onAddGoal={addGoalHandler}
+          onCancel={endAddGoalHandler}
+        />
+        <View style={styles.goalsContainer}>
+          <FlatList
+            data={courseGoals}
+            renderItem={(itemData) => {
+              return (
+                <GoalItem
+                  text={itemData.item.text}
+                  id={itemData.item.id}
+                  onDeleteItem={deleteGoalHandler}
+                />
+              );
+            }}
+            keyExtractor={(item, index) => {
+              return item.id;
+            }}
+            alwaysBounceVertical={false}
+          />
+        </View>
       </View>
-      <View
-        style={{
-          backgroundColor: "blue",
-          width: 100,
-          height: 100,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text>2</Text>
-      </View>
-      <View
-        style={{
-          backgroundColor: "green",
-          width: 100,
-          height: 100,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text>3</Text>
-      </View>
-    </View>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+    paddingTop: 50,
+    paddingHorizontal: 16,
+  },
+  goalsContainer: {
+    flex: 5,
+  },
+});
